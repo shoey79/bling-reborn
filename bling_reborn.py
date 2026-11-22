@@ -573,7 +573,7 @@ def util_stamp(epoch: float) -> str:
 
 
 # --------------------------------------------------------------------------- EVM history
-# From Blink Android app 62.0: clips now live in Ring's event-video service ("EVM"),
+# Since 19 Nov 2026 clips live in Ring's event-video service ("EVM"),
 # reached through Blink's API gateway rather than rest-<tier>.immedia-semi.com.
 
 class EvmError(Exception):

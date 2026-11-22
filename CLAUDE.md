@@ -34,8 +34,8 @@ docs, changelogs, commit messages or test data:
 
 ## Blink API notes
 
-`docs/blink-api.md` records what's known about the endpoints used, including what was learned from the
-Blink Android app. Keep it current when an endpoint changes.
+`docs/blink-api.md` records what's known about the endpoints used. Describe what the app calls and how, not how
+it was worked out. Keep it current when an endpoint changes.
 
 ## Tests
 

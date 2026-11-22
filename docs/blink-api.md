@@ -1,8 +1,7 @@
 # Blink API notes
 
-What Bling Reborn knows about the Blink endpoints it uses. Blink has no public API; this comes from
-[blinkpy](https://github.com/fronzbot/blinkpy), from watching responses, and from the Blink Android app
-(version 62.0, November 2026). Endpoints change without notice.
+What Bling Reborn knows about the Blink endpoints it uses. Blink has no public API, so these are undocumented
+and can change without notice. Sign-in is handled by [blinkpy](https://github.com/fronzbot/blinkpy).
 
 All examples use stand-in IDs.
 
@@ -17,9 +16,8 @@ Requests send `Authorization: Bearer <access token>`.
 
 ## Clip history: EVM (current, since 19 November 2026)
 
-Blink moved clip storage to Ring's event-video service ("EVM"). The Blink app reaches it through Blink's API
-gateway, `https://api.blink.com/blink/` (the app's template is `https://api.{env}blink.com/blink/`, with an
-empty `{env}` in production, the same as the sign-in host).
+Blink moved clip storage to Ring's event-video service ("EVM"), reached through Blink's API gateway at
+`https://api.blink.com/blink/`.
 
 Every gateway request sends:
 

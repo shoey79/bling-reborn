@@ -13,9 +13,9 @@
 
 ## 1.1.0
 
-- Downloads clips again after Blink moved clip storage on 19 November 2026. New clips now come from Blink's
-  new clip history (Ring's event-video service at `api.blink.com`), found in the Blink Android app; the old
-  `media/changed` list stopped receiving clips that day. Both are read and merged, so nothing is saved twice.
+- Downloads clips again after Blink moved clip storage on 19 November 2026. New clips are now read from Blink's
+  current clip history at `api.blink.com`; the old `media/changed` list stopped receiving clips that day and is
+  still read for older clips. Both are merged, so nothing is saved twice.
 
 - Expired clip download links are refreshed automatically during long backfills.
 
