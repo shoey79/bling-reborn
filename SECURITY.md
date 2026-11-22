@@ -1,6 +1,6 @@
 # Security policy
 
-Blink Sync holds a sign-in to your Blink account (an OAuth refresh token, encrypted with Windows DPAPI) and
+Bling Reborn holds a sign-in to your Blink account (an OAuth refresh token, encrypted with Windows DPAPI) and
 downloads your camera footage, so security problems matter. Thank you for reporting them responsibly.
 
 ## Reporting a vulnerability
@@ -8,7 +8,7 @@ downloads your camera footage, so security problems matter. Thank you for report
 **Please don't open a public issue.** Use GitHub's private reporting instead: open the **Security** tab of
 this repository and choose **Report a vulnerability**. Only the maintainer can see the report.
 
-Please include what the problem is, what an attacker could do with it, the Blink Sync version and steps to
+Please include what the problem is, what an attacker could do with it, the Bling Reborn version and steps to
 reproduce. Leave out your own account details, tokens and clip links.
 
 ## Supported versions

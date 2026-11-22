@@ -17,7 +17,7 @@ from aiohttp import ClientSession, web
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 os.environ.setdefault("PYSTRAY_BACKEND", "dummy")
 
-import blink_sync as core  # noqa: E402
+import bling_reborn as core  # noqa: E402
 
 ACCOUNT = 12345
 

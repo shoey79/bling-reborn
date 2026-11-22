@@ -1,6 +1,6 @@
 # Blink API notes
 
-What Blink Sync knows about the Blink endpoints it uses. Blink has no public API; this comes from
+What Bling Reborn knows about the Blink endpoints it uses. Blink has no public API; this comes from
 [blinkpy](https://github.com/fronzbot/blinkpy), from watching responses, and from the Blink Android app
 (version 62.0, November 2026). Endpoints change without notice.
 
@@ -9,7 +9,7 @@ All examples use stand-in IDs.
 ## Sign-in
 
 OAuth 2.0 with PKCE at `https://api.oauth.blink.com/`, handled by blinkpy. Access tokens last about an
-hour; Blink Sync refreshes them and stores the rotating refresh token (DPAPI-encrypted on Windows).
+hour; Bling Reborn refreshes them and stores the rotating refresh token (DPAPI-encrypted on Windows).
 Requests send `Authorization: Bearer <access token>`.
 
 `GET https://rest-<tier>.immedia-semi.com/api/v1/users/tier_info` gives the account ID and the tier
@@ -92,11 +92,11 @@ They expire; re-fetch the event to get a fresh one.
 - Each entry has `id`, `created_at`, `device_name`, `network_id`, `watched`, `deleted` and `media`, a path
   under `/api/v3/media/accounts/…/<id>.mp4` fetched from the same host with the Bearer token.
 - Stopped receiving new clips on 19 November 2026 for at least some accounts (all entries then showed an
-  `updated_at` of 20 November). Blink Sync still reads it, for older clips.
+  `updated_at` of 20 November). Bling Reborn still reads it, for older clips.
 - `api/v2/accounts/{account_id}/media/changed` also answers, with extra `event_purge_id` and
   `media_purge_id` fields, but listed no newer clips either.
 
 ## Snapshots
 
-Blink Sync asks each camera for a new thumbnail (blinkpy's `request_new_image`), waits for the command to
+Bling Reborn asks each camera for a new thumbnail (blinkpy's `request_new_image`), waits for the command to
 finish, then downloads the camera's thumbnail.

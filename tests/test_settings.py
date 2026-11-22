@@ -39,3 +39,32 @@ def test_evm_items_without_video_are_ignored():
     item = {"event_id": "x", "start_time": "2026-11-22T18:30:00Z",
             "visualizations": {"cloud_media_visualization": {"media": [{"file_family": "THUMBNAIL", "url": "u"}]}}}
     assert core.evm_to_clip(item, {}) is None
+
+
+def test_upgrade_from_blink_sync_copies_settings_and_sign_in(tmp_path, monkeypatch):
+    """Settings and sign-in from Blink Sync (<= 1.1.0) are picked up by Bling Reborn, newest copy first."""
+    import json, os, time
+    appdata, profile = tmp_path / "appdata", tmp_path / "profile"
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(appdata))   # stands in for %LOCALAPPDATA% off Windows
+    monkeypatch.setenv("LOCALAPPDATA", str(appdata))
+    monkeypatch.setenv("USERPROFILE", str(profile))
+
+    old_docs = profile / "Documents" / "BlinkSync"            # 1.0.0
+    old_docs.mkdir(parents=True)
+    (old_docs / "Blink.ini").write_text("[SyncVideo]\nOutput=D:\\Old\n", encoding="utf-8")
+    old_local = appdata / "BlinkSync"                        # 1.0.1 - 1.1.0 (newer)
+    old_local.mkdir(parents=True)
+    (old_local / "Blink.ini").write_text("[SyncVideo]\nOutput=D:\\Blink\\Videos\nLastUpdate=2026-11-19T19:36:32+00:00\n",
+                                         encoding="utf-8")
+    (old_local / "credentials.json").write_text(json.dumps({"refresh_token": "r", "hardware_id": "h"}), encoding="utf-8")
+    past = time.time() - 3600
+    os.utime(old_docs / "Blink.ini", (past, past))
+
+    home = core.default_home()
+    assert home == appdata / "BlingReborn"
+    st = core.Settings(home, migrate=True)
+    assert st.get("SyncVideo", "Output") == r"D:\Blink\Videos"
+    assert st.get("SyncVideo", "LastUpdate") == "2026-11-19T19:36:32+00:00"
+    assert core.load_creds(st.creds_path).get("refresh_token") == "r"
+    assert any("BlinkSync" in n for n in st.notes)
+    assert core.Settings(home, migrate=True).notes == []     # only once

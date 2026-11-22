@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-blink_sync - download Blink cloud clips (and optional snapshots) to local storage.
+bling_reborn - download clips from Blink cameras (and optional snapshots) to local storage.
 
-This module is the shared engine behind both the command line and the Blink Sync
-tray app (blink_sync_tray.py). It replaces the sync agents in Bling
+This module is the shared engine behind both the command line and the Bling Reborn
+tray app (bling_reborn_tray.py). It replaces the sync agents in Bling
 (lurume84/bling-desktop) and is built on blinkpy, so it uses Blink's current
 OAuth 2.0 login.
 
 Command line:
-    python blink_sync.py login            # interactive login (email, password, 2FA)
-    python blink_sync.py run              # run continuously
-    python blink_sync.py run --once       # one pass then exit
-    python blink_sync.py cameras          # list cameras on the account
+    python bling_reborn.py login            # interactive login (email, password, 2FA)
+    python bling_reborn.py run              # run continuously
+    python bling_reborn.py run --once       # one pass then exit
+    python bling_reborn.py cameras          # list cameras on the account
 
     --home DIR   Folder holding Blink.ini, credentials.json and Logs\\
-                 (default: %USERPROFILE%\\Documents\\BlinkSync)
+                 (default: %LOCALAPPDATA%\\BlingReborn)
 """
 
 from __future__ import annotations
@@ -47,9 +47,11 @@ from blinkpy import api
 from blinkpy.auth import Auth, BlinkTwoFARequiredError
 from blinkpy.blinkpy import Blink
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
+APP_NAME = "Bling Reborn"
+APP_FOLDER = "BlingReborn"
 
-log = logging.getLogger("blink_sync")
+log = logging.getLogger("bling_reborn")
 
 MONTHS = ["January", "February", "March", "April", "May", "June", "July",
           "August", "September", "October", "November", "December"]
@@ -135,19 +137,23 @@ def default_home() -> Path:
         base = os.environ.get("LOCALAPPDATA") or str(Path.home() / "AppData" / "Local")
     else:
         base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
-    return Path(base) / "BlinkSync"
+    return Path(base) / APP_FOLDER
 
 
 def default_data_dir() -> Path:
     """Default home for downloaded clips and snapshots (Bling-style, under Documents)."""
-    return documents_dir() / "BlinkSync" / "Download"
+    return documents_dir() / APP_FOLDER / "Download"
 
 
 def legacy_homes() -> list[Path]:
-    """Where versions up to 1.0.0 kept Blink.ini and credentials.json."""
+    """Where earlier versions (when the app was called Blink Sync) kept Blink.ini and
+    credentials.json: %LOCALAPPDATA%\\BlinkSync from 1.0.1 to 1.1.0, Documents\\BlinkSync in 1.0.0."""
     seen, out = set(), []
-    for p in (documents_dir() / "BlinkSync",
-              Path(os.environ.get("USERPROFILE") or Path.home()) / "Documents" / "BlinkSync"):
+    old = "BlinkSync"
+    candidates = [default_home().parent / old,
+                  documents_dir() / old,
+                  Path(os.environ.get("USERPROFILE") or Path.home()) / "Documents" / old]
+    for p in candidates:
         key = str(p).lower()
         if key not in seen:
             seen.add(key)
@@ -190,7 +196,7 @@ class Settings:
         self.notes: list[str] = []      # startup messages, logged once logging is set up
         self.ini_path = self.home / "Blink.ini"
         self.creds_path = self.home / "credentials.json"
-        self.log_path = self.home / "Logs" / "blink_sync.log"
+        self.log_path = self.home / "Logs" / "bling_reborn.log"
         self._lock = threading.RLock()   # shared by the sync thread and the tray UI
         self.cp = configparser.ConfigParser(interpolation=None)
         self.cp.optionxform = str  # keep Bling's key capitalisation
@@ -208,7 +214,7 @@ class Settings:
         self.save()   # write any missing keys so the file documents every option
 
     def _migrate_legacy(self):
-        """Bring Blink.ini and the sign-in over from Documents\\BlinkSync (v1.0.0)."""
+        """Bring Blink.ini and the sign-in over from an earlier Blink Sync install (the newest one found)."""
         found = [d for d in legacy_homes() if (d / "Blink.ini").exists()]
         if not found:
             return
@@ -314,7 +320,7 @@ if IS_WINDOWS:
         blob_in = _DataBlob(len(data), ctypes.cast(buf, ctypes.POINTER(ctypes.c_char)))
         blob_out = _DataBlob()
         if protect:
-            ok = _crypt32.CryptProtectData(ctypes.byref(blob_in), "BlinkSync", None, None, None,
+            ok = _crypt32.CryptProtectData(ctypes.byref(blob_in), APP_FOLDER, None, None, None,
                                            _CRYPTPROTECT_UI_FORBIDDEN, ctypes.byref(blob_out))
         else:
             ok = _crypt32.CryptUnprotectData(ctypes.byref(blob_in), None, None, None, None,
@@ -1374,7 +1380,7 @@ class SyncEngine:
 
 # =========================================================================== command line
 
-def log_startup(settings: Settings, app: str = "blink_sync"):
+def log_startup(settings: Settings, app: str = "bling_reborn"):
     creds = load_creds(settings.creds_path)
     log.info("%s %s starting. Settings: %s | sign-in saved: %s | videos: %s", app, __version__,
              settings.ini_path, "yes" if creds.get("refresh_token") else "no",
@@ -1444,8 +1450,8 @@ def main():
             "cameras": lambda: cmd_cameras(settings),
             "diagnose": lambda: cmd_diagnose(settings),
             "run": lambda: cmd_run(settings, args.once)}[args.command]()
-    prog = "blink-sync-cli" if getattr(sys, "frozen", False) else "python blink_sync.py"
-    hint = f"Sign in from the Blink Sync tray icon, or run:  {prog} login"
+    prog = "bling-reborn-cli" if getattr(sys, "frozen", False) else "python bling_reborn.py"
+    hint = f"Sign in from the {APP_NAME} tray icon, or run:  {prog} login"
     loop = new_event_loop()
     try:
         rc = loop.run_until_complete(coro)

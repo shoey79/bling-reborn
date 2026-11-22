@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0
+
+- Renamed from Blink Sync to **Bling Reborn**, so the app's name no longer uses Blink's trademark. The program is now
+  `BlingReborn.exe` (and `bling-reborn-cli.exe`), and settings, sign-in and logs live in `%LOCALAPPDATA%\BlingReborn`.
+
+- Upgrading is automatic: installing over Blink Sync replaces it (same entry in Settings → Apps), moves the program to
+  `%LOCALAPPDATA%\Programs\BlingReborn`, removes the old shortcuts, and keeps "Start with Windows" if it was on. Your
+  settings and sign-in are copied across on first start, so there's no need to sign in again.
+
+- The GitHub repository moved to [shoey79/bling-reborn](https://github.com/shoey79/bling-reborn); old links redirect.
+
 ## 1.1.0
 
 - Downloads clips again after Blink moved clip storage on 19 November 2026. New clips now come from Blink's

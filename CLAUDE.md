@@ -1,4 +1,4 @@
-# Working on Blink Sync
+# Working on Bling Reborn
 
 This repository is public. Never publish details of a real Blink account or network in code, comments,
 docs, changelogs, commit messages or test data:
@@ -22,14 +22,14 @@ docs, changelogs, commit messages or test data:
 
 ## Releases
 
-- Version lives in `__version__` in `blink_sync.py`; bump it and add a `CHANGELOG.md` entry for every release.
+- Version lives in `__version__` in `bling_reborn.py`; bump it and add a `CHANGELOG.md` entry for every release.
 - Push a tag `vX.Y.Z` matching `__version__`; the Release workflow builds the installer on Windows and
-  publishes a GitHub Release with `BlinkSync-Setup-X.Y.Z.exe` and the changelog section as release notes.
+  publishes a GitHub Release with `BlingReborn-Setup-X.Y.Z.exe` and the changelog section as release notes.
 - Changelog: newest first, a blank line between top-level entries.
 
 ## Changelog entries for GitHub issues
 
-- Link the issue and thank whoever raised it, e.g. `([#4](https://github.com/shoey79/blink-sync/issues/4), thanks
+- Link the issue and thank whoever raised it, e.g. `([#4](https://github.com/shoey79/bling-reborn/issues/4), thanks
   to [name](https://github.com/name))`. Don't write a bare `@name` in commit messages (it notifies them).
 
 ## Blink API notes

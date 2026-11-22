@@ -1,4 +1,4 @@
-"""Draws the Blink Sync icon (a camera glyph on a rounded tile) in different status colours."""
+"""Draws the Bling Reborn icon (a camera glyph on a rounded tile) in different status colours."""
 
 from PIL import Image, ImageDraw
 

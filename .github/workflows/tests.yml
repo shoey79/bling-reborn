@@ -46,6 +46,6 @@ jobs:
       - name: Check the built app starts
         shell: pwsh
         run: |
-          $v = & build\pyinstaller\dist\BlinkSync\blink-sync-cli.exe --version
-          Write-Host "blink-sync-cli reports version $v"
-          if (-not (Test-Path build\pyinstaller\dist\BlinkSync\BlinkSync.exe)) { throw "BlinkSync.exe missing" }
+          $v = & build\pyinstaller\dist\BlingReborn\bling-reborn-cli.exe --version
+          Write-Host "bling-reborn-cli reports version $v"
+          if (-not (Test-Path build\pyinstaller\dist\BlingReborn\BlingReborn.exe)) { throw "BlingReborn.exe missing" }

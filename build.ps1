@@ -1,11 +1,11 @@
 <#
 .SYNOPSIS
-    Builds the Blink Sync installer: dist\BlinkSync-Setup-<version>.exe
+    Builds the Bling Reborn installer: dist\BlingReborn-Setup-<version>.exe
 
 .DESCRIPTION
     1. Finds Python 3.10+ (installs Python 3.12 for the current user via winget if missing)
     2. Creates build\venv and installs blinkpy, pystray, Pillow and PyInstaller
-    3. Builds BlinkSync.exe (tray app) and blink-sync-cli.exe with PyInstaller
+    3. Builds BlingReborn.exe (tray app) and bling-reborn-cli.exe with PyInstaller
     4. Optionally code-signs them (-CertThumbprint)
     5. Packs everything with Inno Setup (installs it via winget if missing)
 
@@ -84,9 +84,9 @@ function Sign-Files([string[]]$Files) {
 
 # ------------------------------------------------------------------ version
 if (-not $Version) {
-    $Version = (Select-String -Path blink_sync.py -Pattern '^__version__ = "(.+)"').Matches[0].Groups[1].Value
+    $Version = (Select-String -Path bling_reborn.py -Pattern '^__version__ = "(.+)"').Matches[0].Groups[1].Value
 }
-Write-Host "Building Blink Sync $Version"
+Write-Host "Building Bling Reborn $Version"
 
 # ------------------------------------------------------------------ Python
 Step "Finding Python"
@@ -107,19 +107,19 @@ Invoke-Native $vpy @("-m", "pip", "install", "--quiet", "--upgrade", "pip")
 Invoke-Native $vpy @("-m", "pip", "install", "--quiet", "--upgrade", "-r", "requirements.txt", "pyinstaller")
 
 # ------------------------------------------------------------------ app
-Step "Building BlinkSync.exe"
+Step "Building BlingReborn.exe"
 New-Item -ItemType Directory -Force build | Out-Null
 Invoke-Native $vpy @("icons.py", "build\app.ico")
-$env:BLINKSYNC_VERSION = $Version
+$env:BLINGREBORN_VERSION = $Version
 Invoke-Native $vpy @("-m", "PyInstaller", "--noconfirm", "--clean",
-    "--distpath", "build\pyinstaller\dist", "--workpath", "build\pyinstaller\work", "BlinkSync.spec")
+    "--distpath", "build\pyinstaller\dist", "--workpath", "build\pyinstaller\work", "BlingReborn.spec")
 
-$appDir = "build\pyinstaller\dist\BlinkSync"
-Invoke-Native "$appDir\blink-sync-cli.exe" @("--version") | Out-Null   # smoke test: the bundle starts
+$appDir = "build\pyinstaller\dist\BlingReborn"
+Invoke-Native "$appDir\bling-reborn-cli.exe" @("--version") | Out-Null   # smoke test: the bundle starts
 
 if ($CertThumbprint) {
     Step "Signing executables"
-    Sign-Files @("$appDir\BlinkSync.exe", "$appDir\blink-sync-cli.exe")
+    Sign-Files @("$appDir\BlingReborn.exe", "$appDir\bling-reborn-cli.exe")
 }
 
 if ($SkipInstaller) {
@@ -137,7 +137,7 @@ if (-not $iscc) {
 }
 Invoke-Native $iscc @("/Q", "/DAppVersion=$Version", "installer.iss")
 
-$setup = Resolve-Path "dist\BlinkSync-Setup-$Version.exe"
+$setup = Resolve-Path "dist\BlingReborn-Setup-$Version.exe"
 if ($CertThumbprint) {
     Step "Signing installer"
     Sign-Files @($setup.Path)

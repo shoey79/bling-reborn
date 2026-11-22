@@ -1,13 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
-# PyInstaller spec: builds the tray app (BlinkSync.exe, no console) and the command-line tool
-# (blink-sync-cli.exe) into one folder that shares a single copy of Python and the libraries.
-# Run via build.ps1, which sets BLINKSYNC_VERSION and creates build\app.ico first.
+# PyInstaller spec: builds the tray app (BlingReborn.exe, no console) and the command-line tool
+# (bling-reborn-cli.exe) into one folder that shares a single copy of Python and the libraries.
+# Run via build.ps1, which sets BLINGREBORN_VERSION and creates build\app.ico first.
 
 import os
 import re
 import sys
 
-version = os.environ.get("BLINKSYNC_VERSION", "1.0.0")
+version = os.environ.get("BLINGREBORN_VERSION", "1.0.0")
 icon = os.path.join("build", "app.ico")
 hidden = ["pystray._win32", "PIL._tkinter_finder"] if sys.platform == "win32" else ["PIL._tkinter_finder"]
 
@@ -25,7 +25,7 @@ def version_info(description, filename):
             StringFileInfo([StringTable("080904B0", [
                 StringStruct("FileDescription", description),
                 StringStruct("FileVersion", version),
-                StringStruct("ProductName", "Blink Sync"),
+                StringStruct("ProductName", "Bling Reborn"),
                 StringStruct("ProductVersion", version),
                 StringStruct("InternalName", filename),
                 StringStruct("OriginalFilename", filename),
@@ -34,22 +34,22 @@ def version_info(description, filename):
         ])
 
 
-tray = Analysis(["blink_sync_tray.py"], pathex=["."], hiddenimports=hidden)
-cli = Analysis(["blink_sync.py"], pathex=["."])
+tray = Analysis(["bling_reborn_tray.py"], pathex=["."], hiddenimports=hidden)
+cli = Analysis(["bling_reborn.py"], pathex=["."])
 
 tray_exe = EXE(
     PYZ(tray.pure), tray.scripts, [],
-    exclude_binaries=True, name="BlinkSync", console=False, upx=False,
+    exclude_binaries=True, name="BlingReborn", console=False, upx=False,
     icon=icon if os.path.exists(icon) else None,
-    version=version_info("Blink Sync", "BlinkSync.exe"))
+    version=version_info("Bling Reborn", "BlingReborn.exe"))
 
 cli_exe = EXE(
     PYZ(cli.pure), cli.scripts, [],
-    exclude_binaries=True, name="blink-sync-cli", console=True, upx=False,
+    exclude_binaries=True, name="bling-reborn-cli", console=True, upx=False,
     icon=icon if os.path.exists(icon) else None,
-    version=version_info("Blink Sync command line", "blink-sync-cli.exe"))
+    version=version_info("Bling Reborn command line", "bling-reborn-cli.exe"))
 
 COLLECT(
     tray_exe, tray.binaries, tray.datas,
     cli_exe, cli.binaries, cli.datas,
-    upx=False, name="BlinkSync")
+    upx=False, name="BlingReborn")

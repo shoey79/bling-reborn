@@ -1,10 +1,10 @@
 """
-Blink Sync tray app.
+Bling Reborn tray app.
 
 Sits in the Windows notification area, downloads new Blink clips in the background
-(using the engine in blink_sync.py), and provides sign-in (with 2FA) and settings windows.
+(using the engine in bling_reborn.py), and provides sign-in (with 2FA) and settings windows.
 
-    BlinkSync.exe [--home DIR]
+    BlingReborn.exe [--home DIR]
 """
 
 from __future__ import annotations
@@ -27,15 +27,16 @@ import pystray
 from aiohttp import ClientSession
 from PIL import ImageTk
 
-import blink_sync as core
+import bling_reborn as core
 from icons import draw_icon
 
-APP_NAME = "Blink Sync"
+APP_NAME = core.APP_NAME
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
-RUN_VALUE = "BlinkSync"
-MUTEX_NAME = "BlinkSyncTrayMutex"
+RUN_VALUE = "BlingReborn"
+OLD_RUN_VALUE = "BlinkSync"          # used up to 1.1.0, when the app was called Blink Sync
+MUTEX_NAME = "BlingRebornTrayMutex"
 
-log = logging.getLogger("blink_sync.tray")
+log = logging.getLogger("bling_reborn.tray")
 
 
 # =========================================================================== Windows helpers
@@ -81,6 +82,24 @@ def get_start_with_windows() -> bool:
         return True
     except OSError:
         return False
+
+
+def migrate_startup_entry():
+    """Swap a "Start with Windows" entry left by Blink Sync (<= 1.1.0) for the new one."""
+    if not core.IS_WINDOWS:
+        return
+    import winreg
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, RUN_KEY, 0, winreg.KEY_ALL_ACCESS) as key:
+            try:
+                winreg.QueryValueEx(key, OLD_RUN_VALUE)
+            except FileNotFoundError:
+                return
+            winreg.DeleteValue(key, OLD_RUN_VALUE)
+            winreg.SetValueEx(key, RUN_VALUE, 0, winreg.REG_SZ, startup_command())
+            log.info("Moved the Start with Windows entry to %s", RUN_VALUE)
+    except OSError:
+        log.debug("Couldn't migrate the startup entry", exc_info=True)
 
 
 def set_start_with_windows(enabled: bool):
@@ -227,7 +246,7 @@ class TrayApp:
         self.settings_window: SettingsWindow | None = None
         root.report_callback_exception = self._tk_error
 
-        self.icon = TrayIcon("BlinkSync", self._images["starting"], APP_NAME, menu=self._menu())
+        self.icon = TrayIcon("BlingReborn", self._images["starting"], APP_NAME, menu=self._menu())
         self.engine = BackgroundEngine(settings, self._on_status, self._on_event)
         self.engine.start()
         self.icon.run_detached()
@@ -337,7 +356,7 @@ class TrayApp:
     def _on_event(self, kind: str, message: str):
         if kind == "auth":
             if self.login_window is None and core.load_creds(self.settings.creds_path).get("refresh_token"):
-                self.notify("Blink needs you to sign in again. Right-click the Blink Sync icon "
+                self.notify("Blink needs you to sign in again. Right-click the Bling Reborn icon "
                             "and choose Sign in to Blink.")
         elif kind == "clips" and self.settings.get_bool("App", "NotifyNewClips"):
             self.notify(message)
@@ -593,7 +612,7 @@ class SettingsWindow(Dialog):
         general = ttk.LabelFrame(b, text="General", padding=10)
         general.grid(row=2, column=0, sticky="we", pady=(10, 0))
         self.startup = tk.BooleanVar(value=get_start_with_windows())
-        ttk.Checkbutton(general, text="Start Blink Sync when I sign in to Windows", variable=self.startup,
+        ttk.Checkbutton(general, text=f"Start {APP_NAME} when I sign in to Windows", variable=self.startup,
                         state="normal" if core.IS_WINDOWS else "disabled").grid(row=0, column=0, sticky="w", pady=2)
         check(general, "App", "NotifyNewClips", "Show a notification when new clips are downloaded", 1)
         check(general, "Evm", "MarkWatched", "Mark clips as watched in the Blink app after downloading them", 2)
@@ -678,10 +697,11 @@ def main():
     if not acquire_single_instance():
         root = tk.Tk()
         root.withdraw()
-        messagebox.showinfo(APP_NAME, "Blink Sync is already running. Look for its icon in the "
+        messagebox.showinfo(APP_NAME, f"{APP_NAME} is already running. Look for its icon in the "
                                       "notification area (you may need to click the ^ arrow).")
         return
 
+    migrate_startup_entry()
     enable_dpi_awareness()
     root = tk.Tk()
     root.withdraw()
@@ -696,7 +716,7 @@ if __name__ == "__main__":
     except Exception:  # noqa: BLE001 - windowed app: make sure failures reach the log
         log.exception("Fatal error")
         try:
-            messagebox.showerror(APP_NAME, "Blink Sync hit an unexpected error. Details are in the log.")
+            messagebox.showerror(APP_NAME, f"{APP_NAME} hit an unexpected error. Details are in the log.")
         except Exception:  # noqa: BLE001
             pass
         raise

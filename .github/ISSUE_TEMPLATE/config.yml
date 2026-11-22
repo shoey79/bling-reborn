@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: README
-    url: https://github.com/shoey79/blink-sync#readme
+    url: https://github.com/shoey79/bling-reborn#readme
     about: Install, settings, the tray menu and the command line.
   - name: Report a security vulnerability
-    url: https://github.com/shoey79/blink-sync/security/policy
+    url: https://github.com/shoey79/bling-reborn/security/policy
     about: Please don't open a public issue for security problems; see the security policy instead.
