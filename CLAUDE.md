@@ -11,6 +11,15 @@ docs, changelogs, commit messages or test data:
 - When a fix comes from a user's diagnostic report or log, rewrite the example before it goes in the
   changelog, docs or tests.
 
+## Commits
+
+- End every commit message with both co-author lines, so the owner is credited alongside Claude:
+
+  ```
+  Co-Authored-By: shoey79 <55582766+shoey79@users.noreply.github.com>
+  Co-Authored-By: Claude <noreply@anthropic.com>
+  ```
+
 ## Releases
 
 - Version lives in `__version__` in `blink_sync.py`; bump it and add a `CHANGELOG.md` entry for every release.
