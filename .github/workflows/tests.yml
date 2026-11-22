@@ -1,0 +1,51 @@
+# Tests run on every push and pull request that changes code: the pytest suite on Linux and Windows, and on
+# Windows a PyInstaller build of the app (no installer) to catch packaging problems before a release.
+name: Tests
+
+on:
+  push:
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt pytest
+      - run: python -m pytest -q tests
+
+  build:
+    name: Build app (Windows, no installer)
+    runs-on: windows-latest
+    needs: pytest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Build with PyInstaller
+        shell: pwsh
+        run: ./build.ps1 -SkipInstaller
+      - name: Check the built app starts
+        shell: pwsh
+        run: |
+          $v = & build\pyinstaller\dist\BlinkSync\blink-sync-cli.exe --version
+          Write-Host "blink-sync-cli reports version $v"
+          if (-not (Test-Path build\pyinstaller\dist\BlinkSync\BlinkSync.exe)) { throw "BlinkSync.exe missing" }

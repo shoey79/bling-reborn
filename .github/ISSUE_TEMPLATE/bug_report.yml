@@ -1,0 +1,57 @@
+name: Bug report
+description: Something in Blink Sync isn't working as it should.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+        **Before posting, remove anything that identifies your account**: account, network and camera IDs, camera names, folder paths, and never tokens or clip links. Stand-ins like `12345`, `Front Door` or `D:\Blink\Videos` are fine. This repository is public.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      placeholder: e.g. New clips stopped downloading on 3 March; the tray says "Up to date".
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Blink Sync version
+      description: Tray icon → Settings (bottom of the window), or `blink-sync-cli --version`.
+      placeholder: e.g. 1.1.0
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: e.g. Windows 11 24H2
+  - type: dropdown
+    id: account
+    attributes:
+      label: Blink plan
+      options:
+        - Subscription plan
+        - Legacy / grandfathered free cloud storage
+        - No plan (Sync Module local storage)
+        - Not sure
+  - type: textarea
+    id: log
+    attributes:
+      label: Log extract
+      description: Tray icon → View log. The lines around the problem, cleaned of account details.
+      render: text
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic report
+      description: Tray icon → Save diagnostic report. Attach or paste the summary sections (`clip_list_summary`, `evm_summary`, `probe_summary`), cleaned of account details.

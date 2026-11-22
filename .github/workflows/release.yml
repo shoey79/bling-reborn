@@ -1,0 +1,89 @@
+# Pushing a tag like v1.2.3 builds the Windows installer and publishes it as a GitHub Release.
+# The tag must match __version__ in blink_sync.py; the release notes are that version's CHANGELOG.md section.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to (re)build, e.g. v1.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build installer and publish release
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Check the tag matches the app version
+        id: version
+        shell: pwsh
+        run: |
+          $v = (Select-String -Path blink_sync.py -Pattern '^__version__ = "(.+)"').Matches[0].Groups[1].Value
+          if ("v$v" -ne $env:TAG) { throw "Tag $env:TAG doesn't match __version__ $v in blink_sync.py" }
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Run the tests
+        run: |
+          pip install -r requirements.txt pytest
+          python -m pytest -q tests
+
+      - name: Make sure Inno Setup is available
+        shell: pwsh
+        run: |
+          $iscc = Get-ChildItem "${env:ProgramFiles(x86)}\Inno Setup*\ISCC.exe", "$env:ProgramFiles\Inno Setup*\ISCC.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $iscc) { choco install innosetup -y --no-progress }
+
+      - name: Build installer
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: Release notes and checksum
+        shell: pwsh
+        run: |
+          $v = "${{ steps.version.outputs.version }}"
+          $lines = Get-Content CHANGELOG.md
+          $start = [array]::IndexOf($lines, "## $v")
+          if ($start -lt 0) { throw "CHANGELOG.md has no '## $v' section" }
+          $notes = @()
+          for ($i = $start + 1; $i -lt $lines.Count -and -not $lines[$i].StartsWith("## "); $i++) { $notes += $lines[$i] }
+          $setup = "dist\BlinkSync-Setup-$v.exe"
+          $hash = (Get-FileHash $setup -Algorithm SHA256).Hash.ToLower()
+          "$hash  BlinkSync-Setup-$v.exe" | Set-Content -Encoding ascii "dist\BlinkSync-Setup-$v.exe.sha256"
+          $notes += ""
+          $notes += "**Install:** download ``BlinkSync-Setup-$v.exe`` below and run it (it installs over any earlier version)."
+          $notes += "The installer isn't code-signed, so Windows SmartScreen may ask for confirmation: **More info → Run anyway**."
+          $notes += ""
+          $notes += "SHA-256: ``$hash``"
+          ($notes -join "`n").Trim() | Set-Content -Encoding utf8 release-notes.md
+
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v = "${{ steps.version.outputs.version }}"
+          $files = @("dist\BlinkSync-Setup-$v.exe", "dist\BlinkSync-Setup-$v.exe.sha256")
+          gh release view $env:TAG *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $env:TAG @files --clobber
+            gh release edit $env:TAG --notes-file release-notes.md
+          } else {
+            gh release create $env:TAG @files --title "Blink Sync $v" --notes-file release-notes.md
+          }

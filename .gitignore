@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.zip
+build/
+dist/
+.venv/
+.pytest_cache/
+# never commit real settings, sign-ins or logs
+Blink.ini
+credentials.json
+Logs/
+diagnostics-*.json
